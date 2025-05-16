@@ -1,111 +1,127 @@
 package com.example.dndcompanionapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private val diceTypes = listOf(4, 6, 8, 10, 12, 20, 100)
-    private val diceSelection = mutableMapOf<Int, Int>()
-    private val diceButtons = mutableMapOf<Int, Button>()
-
-    private lateinit var summaryText: TextView
-    private lateinit var resultText: TextView
-    private lateinit var totalText: TextView
-    private lateinit var buttonsCenterContainer: LinearLayout
+    private lateinit var rollLogButton: Button
     private lateinit var rollButton: Button
     private lateinit var clearButton: Button
+    private lateinit var diceButtonsLayout: LinearLayout
+    private lateinit var resultText: TextView
+    private lateinit var detailedRollsText: TextView
 
-    private fun updateUI() {
-        val summary = diceSelection
-            .filter { it.value > 0 }
-            .entries.joinToString(" + ") { "${it.value}d${it.key}" }
+    private val diceMap = mapOf(
+        R.id.d100Button to 100,
+        R.id.d20Button to 20,
+        R.id.d12Button to 12,
+        R.id.d10Button to 10,
+        R.id.d8Button to 8,
+        R.id.d6Button to 6,
+        R.id.d4Button to 4
+    )
 
-        summaryText.text = summary
-
-        // Show or hide the buttons container depending on if any dice are selected
-        buttonsCenterContainer.visibility = if (diceSelection.values.sum() > 0) View.VISIBLE else View.GONE
-
-        // Hide total & result while selecting (but we keep resultText to show previous rolls)
-        totalText.visibility = View.GONE
-        // Don't clear resultText here, so previous roll stays visible until clear
-
-        // Update die button labels with counts
-        for ((sides, button) in diceButtons) {
-            val count = diceSelection[sides] ?: 0
-            button.text = if (count > 0) "d$sides (x$count)" else "Add d$sides"
-        }
-    }
-
-    private fun rollAllDice(): Pair<String, Int> {
-        val resultBuilder = StringBuilder()
-        var total = 0
-        for ((sides, count) in diceSelection) {
-            if (count > 0) {
-                val rolls = List(count) { Random.nextInt(1, sides + 1) }
-                val subtotal = rolls.sum()
-                resultBuilder.append("${count}d$sides: ${rolls.joinToString(", ")} (Total: $subtotal)\n")
-                total += subtotal
-            }
-        }
-        return Pair(resultBuilder.toString().trim(), total)
-    }
-
-    private fun clearSelection() {
-        diceSelection.keys.forEach { diceSelection[it] = 0 }
-        summaryText.text = ""
-        resultText.text = ""
-        totalText.text = ""
-        totalText.visibility = View.GONE
-        updateUI()
-    }
-
-    private fun setupDieButton(button: Button, sides: Int) {
-        diceButtons[sides] = button
-        diceSelection[sides] = 0
-        button.setOnClickListener {
-            diceSelection[sides] = diceSelection[sides]!! + 1
-            updateUI()
-        }
-    }
+    private val selectedDice = mutableMapOf<Int, Int>() // die sides -> count
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_main)
 
-        summaryText = findViewById(R.id.summaryText)
-        resultText = findViewById(R.id.resultText)
-        totalText = findViewById(R.id.totalText)
-        buttonsCenterContainer = findViewById(R.id.buttonsCenterContainer)
+        rollLogButton = findViewById(R.id.rollLogButton)
         rollButton = findViewById(R.id.rollButton)
         clearButton = findViewById(R.id.clearButton)
+        diceButtonsLayout = findViewById(R.id.diceButtonsLayout)
+        resultText = findViewById(R.id.resultText)
+        detailedRollsText = findViewById(R.id.detailedRollsText)
 
-        // Setup die buttons
-        setupDieButton(findViewById(R.id.d4Button), 4)
-        setupDieButton(findViewById(R.id.d6Button), 6)
-        setupDieButton(findViewById(R.id.d8Button), 8)
-        setupDieButton(findViewById(R.id.d10Button), 10)
-        setupDieButton(findViewById(R.id.d12Button), 12)
-        setupDieButton(findViewById(R.id.d20Button), 20)
-        setupDieButton(findViewById(R.id.d100Button), 100)
+        // Setup dice buttons click listeners
+        for ((id, sides) in diceMap) {
+            findViewById<Button>(id).setOnClickListener {
+                addDie(sides)
+            }
+        }
 
         rollButton.setOnClickListener {
-            val (details, total) = rollAllDice()
-            resultText.text = details          // Detailed rolls at bottom
-            totalText.text = total.toString()  // Big grand total centered
-            totalText.visibility = View.VISIBLE
-            buttonsCenterContainer.visibility = View.GONE
-            // Do NOT clear dice selection here, keep summary visible
+            rollDice()
         }
 
         clearButton.setOnClickListener {
-            clearSelection()
-            buttonsCenterContainer.visibility = View.VISIBLE
+            clearDice()
         }
 
-        updateUI()
+        rollLogButton.setOnClickListener {
+            val intent = Intent(this, RollLogActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    private fun addDie(sides: Int) {
+        // If results are visible, assume a previous roll has happened, so start fresh
+        if (resultText.visibility == View.VISIBLE) {
+            selectedDice.clear()
+            resultText.text = ""
+            resultText.visibility = View.INVISIBLE
+            detailedRollsText.text = ""
+        }
+
+        // Add the new die selection
+        selectedDice[sides] = (selectedDice[sides] ?: 0) + 1
+        updateDetailedRollsText()
+        rollButton.visibility = View.VISIBLE
+        clearButton.visibility = View.VISIBLE
+    }
+
+
+    private fun rollDice() {
+        if (selectedDice.isEmpty()) return
+
+        val rollResults = mutableMapOf<Int, List<Int>>()
+        var total = 0
+
+        for ((sides, count) in selectedDice) {
+            val rolls = List(count) { Random.nextInt(1, sides + 1) }
+            rollResults[sides] = rolls
+            total += rolls.sum()
+        }
+
+        resultText.text = total.toString()
+        resultText.visibility = View.VISIBLE
+
+        // Prepare detailed breakdown text for bottom of screen
+        val breakdown = rollResults.entries.joinToString("\n") { (sides, rolls) ->
+            "${rolls.size}d$sides: ${rolls.joinToString(", ")}"
+        }
+        detailedRollsText.text = breakdown
+
+        // Log the roll in RollLog
+        RollLog.addEntry(total, breakdown)
+
+        // Hide buttons after rolling
+        rollButton.visibility = View.INVISIBLE
+        clearButton.visibility = View.INVISIBLE
+    }
+
+    private fun clearDice() {
+        selectedDice.clear()
+        detailedRollsText.text = ""
+        resultText.text = ""
+        resultText.visibility = View.INVISIBLE
+        rollButton.visibility = View.VISIBLE
+        clearButton.visibility = View.VISIBLE
+    }
+
+    private fun updateDetailedRollsText() {
+        val breakdown = selectedDice.entries.joinToString("\n") { (sides, count) ->
+            "${count}d$sides"
+        }
+        detailedRollsText.text = breakdown
     }
 }

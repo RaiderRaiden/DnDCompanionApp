@@ -1,56 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context=".MainActivity"
     android:padding="16dp">
 
-    <!-- Vertical die buttons on the left, centered vertically -->
+    <!-- Dice Buttons column on the left, centered vertically -->
     <LinearLayout
-        android:id="@+id/buttonContainer"
+        android:id="@+id/diceButtonsLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginStart="8dp">
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true">
 
-        <Button android:id="@+id/d4Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d4"/>
-        <Button android:id="@+id/d6Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d6"/>
-        <Button android:id="@+id/d8Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d8"/>
-        <Button android:id="@+id/d10Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d10"/>
-        <Button android:id="@+id/d12Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d12"/>
-        <Button android:id="@+id/d20Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d20"/>
-        <Button android:id="@+id/d100Button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add d100"/>
+        <Button
+            android:id="@+id/d100Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d100" />
+
+        <Button
+            android:id="@+id/d20Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d20" />
+
+        <Button
+            android:id="@+id/d12Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d12" />
+
+        <Button
+            android:id="@+id/d10Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d10" />
+
+        <Button
+            android:id="@+id/d8Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d8" />
+
+        <Button
+            android:id="@+id/d6Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d6" />
+
+        <Button
+            android:id="@+id/d4Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="d4" />
     </LinearLayout>
 
-    <!-- Summary text at top -->
-    <TextView
-        android:id="@+id/summaryText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="18sp"
-        android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"/>
-
-    <!-- Container for Roll and Clear buttons, centered horizontally and vertically -->
+    <!-- Roll and Clear buttons centered in the screen -->
     <LinearLayout
-        android:id="@+id/buttonsCenterContainer"
+        android:id="@+id/actionButtonsLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center"
-        android:visibility="gone">
+        android:orientation="horizontal"
+        android:layout_centerInParent="true"
+        android:visibility="visible">
 
         <Button
             android:id="@+id/rollButton"
@@ -63,37 +79,39 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Clear"
-            android:layout_marginTop="16dp" />
+            android:layout_marginStart="16dp" />
     </LinearLayout>
 
-    <!-- Grand Total displayed big and bold, centered horizontally and vertically -->
+    <!-- Result Text at the center of the screen, large font -->
     <TextView
-        android:id="@+id/totalText"
+        android:id="@+id/resultText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="48sp"
         android:textStyle="bold"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_centerInParent="true"
+        android:visibility="invisible"
+        android:padding="8dp" />
 
-    <!-- Result display at bottom -->
+    <!-- Detailed roll breakdown at the bottom center -->
     <TextView
-        android:id="@+id/resultText"
-        android:layout_width="0dp"
+        android:id="@+id/detailedRollsText"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textSize="18sp"
-        android:textAlignment="center"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="24dp"/>
+        android:textSize="16sp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:padding="8dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Button at top right to open roll log activity -->
+    <Button
+        android:id="@+id/rollLogButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Roll Log"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>
